@@ -7,6 +7,8 @@ library(here)
 #I wrote Steps 1 and 2 to import and merge the data, and kept them here for your reference
 #Skip down to Step 3 to work on EDA
 
+#SOURCE DESCRIPTION
+
 #FILE 1: auc.csv
 #Columns =  stim (stimulus video, levels/labels provided below)
 #           id (unique participant identifier)
@@ -108,50 +110,6 @@ ds %>% group_by(id, age_group) %>%
 
 #Make a summary table of age in years by age group to check whether all participants' ages are correct
 ds %>% group_by(age_group) %>% summarize(min_age = min(age_years), max_age = max(age_years))
-
-#3C SEEN VIDEOS BEFORE:
-  #How many total participants saw each video before collapsed across age? Make a summary table and a bar plot to illustrate this.
-  #Make a table to show how many participants in each age group have seen the videos before
-
-#How many total participants saw each video before collapsed across age? Make a summary table and a bar plot to illustrate this.
-#Summing "watched == "Yes" will give us the summary of how many ppts in each grouping have watched each video
-ds %>% group_by(stim) %>% 
-  summarize(n_watched = sum(watched == "Yes"))
-
-#Plotting watched with bar will give us the counts, facet by stimulus to show it separately by video
-ds %>% ggplot(aes(x = watched)) + geom_bar() + facet_grid("stim")
-
-#Make a table to show how many participants in each age group have seen the videos before
-#Similar to the above, but adding age_group to group_by gives us the totals within age group
-#Pivoting wider makes it a little bit more readable
-ds %>% group_by(age_group, stim) %>% 
-  summarize(n_watched = sum(watched == "Yes")) %>% 
-  pivot_wider(id_cols = "age_group", names_from = "stim", values_from = "n_watched") 
-
-#3D AUC VALUES:
-  #Are the two AUC values all within the possible range (0,1)? Create a plot and a summary table to investigate.
-  #Plot AUCs by stimulus and age to explore whether they might be related. 
-    #How do they compare to chance (.5)? Plot AUCs across their full range 0-1.
-
-#Easier if we pivot AUC to longer
-ds_longer <- ds %>% pivot_longer(starts_with("AUC"), names_to = "model", values_to = "AUC")
-
-#Are the two AUC values all within the possible range (0,1)? Create a plot and a summary table to investigate.
-#Histogram of AUC with bar fills determined by model, seems like they're all in range
-ds_longer %>% ggplot(aes(x = AUC, fill = model)) + geom_histogram() + xlim(0,1)
-
-#Are the two AUC values all within the possible range (0,1)? Create a plot and a summary table to investigate.
-#Summary table version shows that all AUCs are > 0 and < 1
-ds_longer %>% group_by(model) %>% summarize(min = min(AUC), max = max(AUC))
-
-#Plot AUCs by stimulus and age to explore whether they might be related. How do they compare to chance (.5)?
-ds_longer %>% ggplot(aes(x = age, y = AUC, color = model)) + 
-  geom_point() + 
-  facet_wrap("stim") +
-  geom_hline(yintercept = .5) +
-  ylim(0,1)
-  
-
 
 
 
